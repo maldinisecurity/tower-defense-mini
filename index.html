@@ -1,1 +1,65 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tower Defense Mini</title><link rel="stylesheet" href="styles.css"></head><body><main class="app"><h1>Tower Defense Mini</h1><div class="hud"><span id="stats">Gold: 120 | HP: 10 | Wave: 1</span></div><canvas id="g" width="900" height="520"></canvas><p id="msg">Click to place tower (50 gold). Stop enemies.</p></main><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Tower Defense Mini</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Lane Defense</p>
+        <h1>Tower Defense Mini</h1>
+        <p class="intro">Build between waves, swap tower types quickly on mobile, and upgrade existing placements instead of starting from scratch.</p>
+      </div>
+
+      <div class="hero-actions">
+        <button id="waveBtn" type="button">Start Wave</button>
+        <button id="restartBtn" class="ghost" type="button">Restart</button>
+      </div>
+    </header>
+
+    <section class="hud" aria-label="Game stats">
+      <article class="stat-card">
+        <span class="stat-label">Gold</span>
+        <strong id="goldValue">150</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Base HP</span>
+        <strong id="hpValue">12</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Wave</span>
+        <strong id="waveValue">1</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Selected</span>
+        <strong id="selectedValue">Pulse</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">State</span>
+        <strong id="statusValue" data-state="build">Build</strong>
+      </article>
+    </section>
+
+    <section class="board-card">
+      <div class="board-wrap wide">
+        <canvas id="g" width="900" height="520" aria-label="Tower defense map"></canvas>
+      </div>
+      <p id="msg">Select a tower, tap the field to place it, or tap an existing tower to upgrade during build time.</p>
+    </section>
+
+    <section class="action-row">
+      <div class="tower-picker" aria-label="Tower selection">
+        <button class="tower-button" data-type="pulse" data-selected="true" type="button">Pulse 50</button>
+        <button class="tower-button ghost" data-type="beam" data-selected="false" type="button">Beam 85</button>
+      </div>
+      <p class="legend">Pulse towers fire quickly at close range. Beam towers hit harder from farther back. Upgrade costs climb each level.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
