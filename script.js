@@ -14,6 +14,259 @@ const waveBtn = document.getElementById("waveBtn");
 const restartBtn = document.getElementById("restartBtn");
 const towerButtons = [...document.querySelectorAll("[data-type]")];
 
+function injectEntryMenuStyles() {
+  if (document.getElementById("entryMenuStyles")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+  style.id = "entryMenuStyles";
+  style.textContent = `
+    body.entry-menu-open {
+      overflow: hidden;
+    }
+
+    .entry-shell {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding-left: max(16px, env(safe-area-inset-left));
+      background: rgba(2, 8, 23, 0.54);
+      backdrop-filter: blur(16px);
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+
+    .entry-shell.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .entry-shell::before,
+    .entry-shell::after {
+      content: "";
+      position: absolute;
+      width: clamp(180px, 28vw, 320px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      filter: blur(10px);
+      opacity: 0.22;
+      animation: entryFloat 7s ease-in-out infinite;
+    }
+
+    .entry-shell::before {
+      top: 8%;
+      left: 6%;
+      background: radial-gradient(circle, var(--accent, #34d399), transparent 62%);
+    }
+
+    .entry-shell::after {
+      right: 8%;
+      bottom: 6%;
+      animation-delay: -3s;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.9), transparent 62%);
+    }
+
+    .entry-panel {
+      position: relative;
+      width: min(540px, 100%);
+      padding: clamp(20px, 4vw, 30px);
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(10, 18, 33, 0.96), rgba(4, 10, 20, 0.96));
+      box-shadow: 0 30px 80px rgba(2, 8, 23, 0.46);
+      overflow: hidden;
+      animation: entryRise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .entry-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 120px;
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .entry-screen {
+      position: relative;
+      z-index: 1;
+      display: none;
+      gap: 14px;
+    }
+
+    .entry-screen.is-active {
+      display: grid;
+      animation: entryCopy 0.24s ease;
+    }
+
+    .entry-kicker {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent, #34d399);
+    }
+
+    .entry-panel h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      line-height: 1;
+      color: var(--text, #f7fbff);
+    }
+
+    .entry-copy {
+      margin: 0;
+      color: var(--muted, #c5d8e8);
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .entry-guide {
+      display: grid;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .entry-guide p {
+      margin: 0;
+      color: var(--muted, #c5d8e8);
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .entry-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .entry-actions button {
+      flex: 1 1 180px;
+    }
+
+    .entry-secondary {
+      background: transparent !important;
+      color: var(--text, #f7fbff) !important;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: none !important;
+    }
+
+    @media (max-width: 480px) {
+      .entry-panel {
+        border-radius: 24px;
+        padding: 18px;
+      }
+
+      .entry-actions button {
+        flex-basis: 100%;
+      }
+    }
+
+    @keyframes entryFloat {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-14px) scale(1.06); }
+    }
+
+    @keyframes entryRise {
+      from { transform: translateY(24px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes entryCopy {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  `;
+  document.head.append(style);
+}
+
+function createEntryMenu({ title, kicker, description, tutorial, onStart }) {
+  injectEntryMenuStyles();
+
+  const shell = document.createElement("section");
+  shell.className = "entry-shell is-hidden";
+  shell.hidden = true;
+  shell.innerHTML = `
+    <article class="entry-panel" aria-label="${title} start screen">
+      <section class="entry-screen is-active" data-entry-screen="home">
+        <p class="entry-kicker">${kicker}</p>
+        <h2>${title}</h2>
+        <p class="entry-copy">${description}</p>
+        <div class="entry-actions">
+          <button type="button" data-entry-start>Start New Game</button>
+          <button type="button" class="entry-secondary" data-entry-tutorial>Tutorial / Help</button>
+        </div>
+      </section>
+      <section class="entry-screen" data-entry-screen="tutorial" hidden>
+        <p class="entry-kicker">Tutorial</p>
+        <h2>How To Play</h2>
+        <div class="entry-guide">${tutorial.map((item) => `<p>${item}</p>`).join("")}</div>
+        <div class="entry-actions">
+          <button type="button" class="entry-secondary" data-entry-back>Back</button>
+          <button type="button" data-entry-start>Start Game</button>
+        </div>
+      </section>
+    </article>
+  `;
+  document.body.append(shell);
+
+  const screens = [...shell.querySelectorAll(".entry-screen")];
+
+  const showScreen = (name) => {
+    screens.forEach((screen) => {
+      const active = screen.dataset.entryScreen === name;
+      screen.hidden = !active;
+      screen.classList.toggle("is-active", active);
+    });
+  };
+
+  const close = () => {
+    shell.classList.add("is-hidden");
+    document.body.classList.remove("entry-menu-open");
+    window.setTimeout(() => {
+      shell.hidden = true;
+    }, 220);
+  };
+
+  const open = (screen = "home") => {
+    showScreen(screen);
+    shell.hidden = false;
+    document.body.classList.add("entry-menu-open");
+    requestAnimationFrame(() => {
+      shell.classList.remove("is-hidden");
+    });
+  };
+
+  shell.querySelectorAll("[data-entry-start]").forEach((button) => {
+    button.addEventListener("click", () => {
+      onStart();
+      close();
+    });
+  });
+  shell.querySelector("[data-entry-tutorial]").addEventListener("click", () => {
+    showScreen("tutorial");
+  });
+  shell.querySelector("[data-entry-back]").addEventListener("click", () => {
+    showScreen("home");
+  });
+
+  open();
+}
+
 const pathPoints = [
   { x: 0, y: 260 },
   { x: 198, y: 260 },
@@ -411,4 +664,16 @@ canvas.addEventListener("pointerdown", (event) => {
 
 buildPathData();
 resetGame();
+createEntryMenu({
+  title: "Tower Defense Mini",
+  kicker: "Lane Defense",
+  description: "Start with a clean map, choose a tower plan, and hold the road through an escalating set of waves.",
+  tutorial: [
+    "Pick a tower type, then tap the field to place it away from the road.",
+    "Pulse towers are cheaper and faster, while Beam towers hit harder from farther away.",
+    "Between waves, tap an existing tower to upgrade it if you have enough gold.",
+    "Protect the base through all waves. If enemies reach the end, your base HP drops.",
+  ],
+  onStart: resetGame,
+});
 requestAnimationFrame(frame);
